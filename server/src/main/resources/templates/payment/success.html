@@ -3,6 +3,9 @@
 <head><meta charset="utf-8"><title>결제 완료</title></head>
 <body>
 <h2>결제가 정상적으로 완료되었습니다!</h2>
-<a href="/" >메인으로</a>
+<p th:if="${auctionId != null}">
+    <a th:href="@{'/auction/' + ${auctionId}}">경매로 돌아가기</a>
+</p>
+<a href="/">메인으로</a>
 </body>
 </html>
