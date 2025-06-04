@@ -4,10 +4,10 @@ import com.cashticket.config.CurrentUser;
 import com.cashticket.entity.User;
 import com.cashticket.service.PaymentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequiredArgsConstructor
@@ -15,6 +15,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class PaymentController {
 
     private final PaymentService paymentService;
+    @Value("${toss.client-key:test_ck_5OWRapdA8dd9zMMqkWbY8o1zEqZK}")
+    private String clientKey;
 
     /* ■ 사전결제 위젯 페이지 (auctionId, amount 는 모델에 담긴 상태) */
     @GetMapping("/auction/{auctionId}")
@@ -26,6 +28,7 @@ public class PaymentController {
         model.addAttribute("auctionId", auctionId);
         model.addAttribute("amount",    amount);
         model.addAttribute("user",      user);
+        model.addAttribute("clientKey", clientKey);
         return "payment/index";
     }
 
@@ -36,11 +39,11 @@ public class PaymentController {
                           @RequestParam Long amount,
                           @RequestParam Long auctionId,
                           @CurrentUser User user,
-                          RedirectAttributes ra) {
+                          Model model) {
 
         paymentService.approveAndSave(paymentKey, orderId, amount, auctionId, user);
-        ra.addFlashAttribute("message", "결제가 완료되었습니다. 이제 입찰 가능합니다!");
-        return "redirect:/auction/" + auctionId;
+        model.addAttribute("auctionId", auctionId);
+        return "payment/success";
     }
 
     /* ■ Toss 위젯 failUrl */

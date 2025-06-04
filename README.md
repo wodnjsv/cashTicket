@@ -98,3 +98,6 @@
 
 - Ngrinder (가상의 유저를 생성하고 지정된 초당 요청을 서버로 보낸다)
 - 단일서버 일때 병목현상이 생기기전 트래픽, 우리 서비스의 아키텍처일때 병목현상이 생기기 전 트래픽을 비교한다.
+
+### Local Test Data
+The application now seeds a dummy user and concert on startup. A test auction is automatically created for the concert so you can try the payment flow immediately.

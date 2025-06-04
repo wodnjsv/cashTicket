@@ -4,6 +4,7 @@ import com.cashticket.entity.Payment;
 import com.cashticket.entity.User;
 import com.cashticket.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -21,9 +22,12 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
 
-    /* Toss 테스트 Secret Key (운영 시 교체) */
-    private static final String SECRET_KEY = "test_sk_GePWvyJnrKmkKBoYlbdL3gLzN97E";
-    private static final String BASE_URL   = "https://api.tosspayments.com/v1/payments";
+    /* Toss 비밀키와 API Base URL */
+    @Value("${toss.secret-key:test_sk_GePWvyJnrKmkKBoYlbdL3gLzN97E}")
+    private String secretKey;
+
+    @Value("${toss.base-url:https://api.tosspayments.com/v1/payments}")
+    private String baseUrl;
 
     /** Toss 승인 API 호출 + DB 기록 */
     public void approveAndSave(String paymentKey,
@@ -33,14 +37,17 @@ public class PaymentService {
                                User user) {
 
         WebClient client = WebClient.builder()
-                .baseUrl(BASE_URL)
+                .baseUrl(baseUrl)
                 .defaultHeader(HttpHeaders.AUTHORIZATION, basicAuthHeader())
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
 
         client.post()
-                .uri("/{paymentKey}", paymentKey)
-                .bodyValue(Map.of("orderId", orderId, "amount", amount))
+                .uri("/confirm")
+                .bodyValue(Map.of(
+                        "paymentKey", paymentKey,
+                        "orderId", orderId,
+                        "amount", amount))
                 .retrieve()
                 .bodyToMono(String.class)
                 .onErrorResume(e -> Mono.error(new RuntimeException("Toss 승인 실패", e)))
@@ -65,7 +72,7 @@ public class PaymentService {
 
     /* basic auth header */
     private String basicAuthHeader() {
-        String raw = SECRET_KEY + ":";
+        String raw = secretKey + ":";
         return "Basic " +
                 Base64.getEncoder().encodeToString(raw.getBytes(StandardCharsets.UTF_8));
     }
