@@ -1,0 +1,64 @@
+redis:
+  host: ${REDIS_HOST:localhost}        # Redis 서버 호스트 (AWS EC2 호스트 이름 또는 IP)
+  port: 6379                        # Redis 포트 (기본값: 6379)
+  password: ${REDIS_PASSWORD:1234}       # Redis 인증 비밀번호 (없다면 생략 가능)
+  timeout: 2000                     # 연결 타임아웃 (ms 단위)
+  lettuce:
+    pool:
+      max-active: 10              # 최대 연결 수
+      max-idle: 5                 # 유휴 상태 연결의 최대 수
+      min-idle: 1
+server:
+  port: 8080
+spring:
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false
+  session:
+    store-type: redis
+    redis:
+      namespace: spring:session
+      flush-mode: on_save
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+        order_inserts: true
+        order_updates: true
+        globally_quoted_identifiers: true
+        hbm2ddl:
+          auto: create-drop
+          schema_generation:
+            create_source: metadata
+            create_order: tables-then-constraints
+            scripts:
+              action: create
+              create-target: create.sql
+              drop-target: drop.sql
+        cache:
+          use_query_cache: false
+          use_second_level_cache: false
+          use_structured_entries: false
+          use_minimal_puts: false
+          region:
+            factory_class: org.hibernate.cache.internal.NoCachingRegionFactory
+        generate_statistics: false
+  datasource:
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:org.h2.Driver}
+    url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
+    username: ${SPRING_DATASOURCE_USERNAME:sa}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+        
