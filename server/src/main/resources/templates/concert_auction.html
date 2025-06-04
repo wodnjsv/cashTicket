@@ -68,12 +68,29 @@
             <form th:action="@{/auction/bid}" method="post" class="mt-3" onsubmit="validateBid(event)">
                 <div class="mb-3">
                     <label for="bidAmount" class="form-label">입찰 금액 (원)</label>
-                    <input type="number" class="form-control" id="bidAmount" name="bidAmount" 
+                    <input type="number" class="form-control" id="bidAmount" name="bidAmount"
                            th:min="${currentBid + 1000}" step="1000" required>
                     <small class="text-muted">최소 입찰 단위: 1,000원</small>
                 </div>
                 <input type="hidden" name="concertId" th:value="${concert.id}">
                 <button type="submit" class="btn btn-success">입찰하기</button>
+            </form>
+
+            <!-- 사전결제 테스트 폼 -->
+            <hr>
+            <h6 class="mt-4">🧾 사전결제 테스트</h6>
+            <form th:action="@{/payments/auction/{auctionId}(auctionId=${concert.id})}"
+                  method="get" class="row g-3 align-items-center mt-2">
+                <div class="col-auto">
+                    <label for="prePayAmount" class="col-form-label">금액 (원)</label>
+                </div>
+                <div class="col-auto">
+                    <input type="number" id="prePayAmount" name="amount" class="form-control"
+                           min="1000" step="1000" required>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">사전결제</button>
+                </div>
             </form>
         </div>
     </div>
