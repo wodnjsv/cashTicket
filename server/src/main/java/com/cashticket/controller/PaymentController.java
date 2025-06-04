@@ -40,10 +40,16 @@ public class PaymentController {
                           @RequestParam Long auctionId,
                           @CurrentUser User user,
                           Model model) {
-
-        paymentService.approveAndSave(paymentKey, orderId, amount, auctionId, user);
-        model.addAttribute("auctionId", auctionId);
-        return "payment/success";
+        try {
+            var payment = paymentService.approveAndSave(paymentKey, orderId, amount, auctionId, user);
+            model.addAttribute("payment", payment);
+            model.addAttribute("auctionId", auctionId);
+            return "payment/success";
+        } catch (Exception e) {
+            model.addAttribute("code", "APPROVE_FAILED");
+            model.addAttribute("message", e.getMessage());
+            return "payment/fail";
+        }
     }
 
     /* ■ Toss 위젯 failUrl */

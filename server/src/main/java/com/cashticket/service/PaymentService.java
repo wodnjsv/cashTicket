@@ -30,11 +30,11 @@ public class PaymentService {
     private String baseUrl;
 
     /** Toss 승인 API 호출 + DB 기록 */
-    public void approveAndSave(String paymentKey,
-                               String orderId,
-                               Long amount,
-                               Long auctionId,
-                               User user) {
+    public Payment approveAndSave(String paymentKey,
+                                  String orderId,
+                                  Long amount,
+                                  Long auctionId,
+                                  User user) {
 
         WebClient client = WebClient.builder()
                 .baseUrl(baseUrl)
@@ -42,28 +42,37 @@ public class PaymentService {
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
 
-        client.post()
+        ConfirmResponse res = client.post()
                 .uri("/confirm")
                 .bodyValue(Map.of(
                         "paymentKey", paymentKey,
                         "orderId", orderId,
                         "amount", amount))
                 .retrieve()
-                .bodyToMono(String.class)
+                .bodyToMono(ConfirmResponse.class)
                 .onErrorResume(e -> Mono.error(new RuntimeException("Toss 승인 실패", e)))
                 .block();   // 간단한 과제이므로 blokcing
 
-        paymentRepository.save(
-                Payment.builder()
-                        .paymentKey(paymentKey)
-                        .orderId(orderId)
-                        .amount(amount)
-                        .auctionId(auctionId)
-                        .user(user)
-                        .success(true)
-                        .approvedAt(LocalDateTime.now())
-                        .build()
-        );
+        LocalDateTime approvedAt = LocalDateTime.now();
+        if (res != null && res.approvedAt != null) {
+            try {
+                approvedAt = java.time.OffsetDateTime.parse(res.approvedAt)
+                        .toLocalDateTime();
+            } catch (Exception ignore) { }
+        }
+
+        Payment payment = Payment.builder()
+                .paymentKey(paymentKey)
+                .orderId(orderId)
+                .amount(amount)
+                .auctionId(auctionId)
+                .user(user)
+                .success(true)
+                .approvedAt(approvedAt)
+                .build();
+
+        paymentRepository.save(payment);
+        return payment;
     }
 
     public java.util.List<Payment> history(Long userId) {
@@ -75,5 +84,10 @@ public class PaymentService {
         String raw = secretKey + ":";
         return "Basic " +
                 Base64.getEncoder().encodeToString(raw.getBytes(StandardCharsets.UTF_8));
+    }
+
+    /** Toss 승인 응답 일부를 매핑하기 위한 내부 클래스 */
+    private static class ConfirmResponse {
+        public String approvedAt;
     }
 }
