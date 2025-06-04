@@ -17,7 +17,7 @@
 
 <!-- Inline-JS : 주석토큰(*)으로 IDE 경고 제거 -->
 <script th:inline="javascript">
-    const CK         = 'test_ck_5OWRapdA8dd9zMMqkWbY8o1zEqZK';
+    const CK         = /*[['' + ${clientKey} + '']]*/ 'test_ck_5OWRapdA8dd9zMMqkWbY8o1zEqZK';
     const AUCTION_ID = /*[[${auctionId}]]*/ 0;
     const AMOUNT     = /*[[${amount}]]*/ 0;
     const CUSTOMER   = /*[['user-' + ${user.id}]]*/ 'anonymous';
